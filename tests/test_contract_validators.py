@@ -2,7 +2,6 @@ from __future__ import annotations
 
 # ruff: noqa: S101
 import json
-import pathlib
 from typing import TYPE_CHECKING, cast
 
 import pytest
@@ -18,6 +17,8 @@ from x_make_contract_validators_x.x_cls_make_contract_validators_x import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from _pytest.capture import CaptureFixture
 
 
@@ -89,7 +90,7 @@ def test_run_inline_payload(sample_schema: dict[str, object]) -> None:
 
 
 def test_run_payload_from_files(
-    sample_schema: dict[str, object], tmp_path: pathlib.Path
+    sample_schema: dict[str, object], tmp_path: Path
 ) -> None:
     schema_path = tmp_path / "schema.json"
     payload_path = tmp_path / "payload.json"
@@ -123,7 +124,7 @@ def test_run_failure_details(sample_schema: dict[str, object]) -> None:
 
 def test_cli_success(
     sample_schema: dict[str, object],
-    tmp_path: pathlib.Path,
+    tmp_path: Path,
     capsys: CaptureFixture[str],
 ) -> None:
     schema_path = tmp_path / "schema.json"
@@ -149,7 +150,7 @@ def test_cli_success(
 
 def test_cli_failure(
     sample_schema: dict[str, object],
-    tmp_path: pathlib.Path,
+    tmp_path: Path,
     capsys: CaptureFixture[str],
 ) -> None:
     schema_path = tmp_path / "schema.json"

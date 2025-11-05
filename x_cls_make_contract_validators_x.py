@@ -42,13 +42,28 @@ class _DraftValidatorProtocol(Protocol):
     def iter_errors(self, instance: object) -> Iterable[object]: ...
 
 
+_Draft202012Validator: type[_DraftValidatorProtocol] | None
+_draft_validator_import_error: ImportError | None
+
+
+try:
+    from jsonschema.validators import Draft202012Validator as _Draft202012Validator_raw
+except ImportError as exc:
+    # pragma: no cover - optional dependency path
+    _Draft202012Validator = None
+    _draft_validator_import_error = exc
+else:
+    _Draft202012Validator = cast(
+        "type[_DraftValidatorProtocol]", _Draft202012Validator_raw
+    )
+    _draft_validator_import_error = None
+
+
 def _load_validator() -> type[_DraftValidatorProtocol]:
-    try:
-        from jsonschema.validators import Draft202012Validator
-    except ImportError as exc:  # pragma: no cover - dependency missing
+    if _Draft202012Validator is None:
         message = "jsonschema Draft202012Validator is unavailable"
-        raise RuntimeError(message) from exc
-    return cast("type[_DraftValidatorProtocol]", Draft202012Validator)
+        raise RuntimeError(message) from _draft_validator_import_error
+    return _Draft202012Validator
 
 
 _DRAFT_VALIDATOR: Final[type[_DraftValidatorProtocol]] = _load_validator()
