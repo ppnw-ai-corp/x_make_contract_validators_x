@@ -7,8 +7,9 @@ import json
 import sys
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from importlib import import_module
 from pathlib import Path
-from typing import Final, Literal, Protocol, TypeAlias, TypedDict, cast
+from typing import Final, Literal, Protocol, TypedDict, cast
 
 from x_make_common_x.json_contracts import validate_schema as _common_validate_schema
 
@@ -30,7 +31,7 @@ class RunFailure(TypedDict):
     message: str
 
 
-RunResult: TypeAlias = RunSuccess | RunFailure
+RunResult = RunSuccess | RunFailure
 
 
 class _DraftValidatorProtocol(Protocol):
@@ -44,11 +45,14 @@ class _DraftValidatorProtocol(Protocol):
 
 def _load_validator() -> type[_DraftValidatorProtocol]:
     try:
-        from jsonschema.validators import Draft202012Validator
-    except ImportError as exc:  # pragma: no cover - dependency missing
+        validators_module = import_module("jsonschema.validators")
+        module_dict = cast("dict[str, object]", validators_module.__dict__)
+        draft_candidate = module_dict["Draft202012Validator"]
+        draft_validator = cast("type[_DraftValidatorProtocol]", draft_candidate)
+    except (KeyError, ModuleNotFoundError, AttributeError) as exc:  # pragma: no cover
         message = "jsonschema Draft202012Validator is unavailable"
         raise RuntimeError(message) from exc
-    return cast("type[_DraftValidatorProtocol]", Draft202012Validator)
+    return draft_validator
 
 
 _DRAFT_VALIDATOR: Final[type[_DraftValidatorProtocol]] = _load_validator()
